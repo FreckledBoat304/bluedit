@@ -1,0 +1,426 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>BluEdit</title>
+	<link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuNWWFMmUAAAIbSURBVFhHxZVNSxtRFIaHooPJSKhRpItuVChobD4mxgQ/GG0gCw0YQQtC0lU3FUG6D4hrcStoBhyUIC5ixUV/Qht17kysmoYqhJq0mH6suu/03syZ+Avu6bPLfRcP7zlniPA/KEcyz8yuae1u4a0XnvA4e7PWT8RYVRfClumdPoFnHAqF4tNcLvfl3csV61war5YmX/dBxJ+ZmeoTj8e4zGROLFVVa++1gwGI+MPkHR3EFATdEkVSy2bJIET8AbnB5O3tej0SufZBxJ/FRSY3QE5qExMVP0T8seWEPDS/wWs+P3/bS5u35LHY5+cQ8Qeaw9iNb9Eo4tjj8Xq3M/a2NlIbGSkPQ8SfZLLSQ+U6HNx3dLnL5ewceeyJxJ3X7X5oLsuIB5dKlbvdbqMpF0W9EQohNk+l6i05bX4/OnoZgIg/icSVV5LMc1uu36M2X1qq9NCdn9ljJ41gELE527kkOWPXceVzc9XHVO6MHVeuKE35qT12/YfPhyifnf3a1dlpOjv/JctlGSL+KIrJmhftsZMGanO2c/qdf3SaDw1dBSHiDxxcU06b/5TlT2GI+MPkdOet5oEAYvOtrTw9OOODI/f7r0MQ8ceyrEe7uy8O0+lVy+U6/U3/1fDGzsjnk8vb2+G/qjp2sbmZxbt2RqGQDuzsRP5oWnyvVNqQ4BmHYnHfo2lT5tHRqyxbAzzjoSjjK8fH61H4iYwg/ANx1gcRhW1UuAAAAABJRU5ErkJggg=="/>
+	<style>
+	.menubar{
+		background-color: rgb(30,10,180);
+	}
+	.menu:hover{
+		background-color: rgb(30,10,120);
+	}
+	.pane{
+		color: rgb(30,10,120);
+	}
+	.filemenu{
+		background: rgb(30,10,180);
+	}
+	.menuitem:hover{
+		background: rgb(30,10,120);
+	}
+	body{
+		background: rgb(30,10,180);
+	}
+	.viewmenu{
+		background: rgb(30,10,180);
+	}
+	.filemenu{
+		color: white;
+	}
+	.viewmenu{
+		color: white;
+	}
+	</style>
+	<!--For static rules-->
+	<style>
+	.menu{
+		color: white;
+		cursor: pointer;
+		-webkit-user-select: none;
+		font-family: Arial;
+		padding: 5px;
+		-webkit-transition: background 0.2s;
+		vertical-align: middle;
+	}
+	body{
+		overflow: hidden;
+	}
+	#viewmenu{
+		display: none;
+		position: absolute;
+		left: 39px;
+		top: 21px;
+		font-family: Arial;
+	}
+	tr{
+		padding: 0px;
+	}
+	.menuitem{
+		-webkit-transition: 0.2s background;
+		cursor: pointer;
+		padding: 3px 5px;
+	}
+	.pane{
+		position: absolute;
+		bottom: 0px;
+		left: 0px;
+		width: calc(100% - 5px);
+		height: calc(100% - 27px);
+		resize: none;
+		outline: none;
+	}
+	#dwnld{
+		display: none;
+	}
+	#f{
+		display: none;
+	}
+	#filemenu{
+		display: none;
+		position: absolute;
+		left: 0px;
+		top: 21px;
+	}
+	#cover{
+		position: absolute;
+		top: 0px;
+		left: 85px;
+		height: 23px;
+		width: calc(100% - 85px);
+	}
+	.menubar{
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		width: 100%;
+		padding: 0px;
+		height: 23px;
+		vertical-align: middle;
+		cursor: pointer !important;
+		-webkit-user-select:none;
+	}
+	.filemenu{
+		padding: 0px;
+		font-family: Arial;
+	}
+	.bg{
+		position: fixed;
+		top: 0px;
+		left: 0px;
+		width: 100%;
+		height: 100%;
+		background-color: black;
+		opacity: 0.5;
+	}
+	.popup{
+		position: fixed;
+		padding: 15px;
+		border-radius: 1em;
+		top: 30%;
+		left: 30%;
+		width: 40%;
+		height: 40%;
+		background-color: blue;
+		display: none;
+		box-shadow: 1px 1px 1px #2E2E2E;
+	}
+	.closebutton{
+		color: white;
+		font-family: Arial;
+		cursor: pointer;
+	}
+	.popuptext{
+		color: white;
+		font-family: Arial;
+		margin-top: -10px;
+		margin-left: 20px;
+	}
+	.editscpt{
+		resize: none;
+		width: 100%;
+		height: calc(100% - 100px);
+	}
+	</style>
+	<script>
+	var isMenuActive = false;
+	var fname_ = "untitled.txt";
+	window.onload = function(){
+		String.prototype.splitEvery = function(n){
+			var splits = Math.ceil(this.length/n);
+			var result = [];
+			for(var i=0;i!=splits;i++){
+				result.push(this.substring(n*i,Math.min(this.length,n*i+6)));
+			}
+			return result;
+		}
+		String.prototype.replaceAll = function(o,n){
+			return this.split(o).join(n);
+		}
+		
+		document.getElementById("pane").focus();
+		if(localStorage.getItem("BluEditThemeCode")){
+			var codeE = atob(localStorage.getItem("BluEditThemeCode"));
+			var listE = codeE.splitEvery(6);
+			//document.getElementById("menubar").style.background = "#"+listE[0];
+			document.getElementsByTagName("style")[0].innerHTML = ".menubar{background-color:#"+listE[0]+";}.menu:hover{background-color:#"+listE[3]+";}.pane{color:#"+listE[10]+";background:#"+listE[9]+";}.filemenu{background:#"+listE[5]+";}.menuitem:hover{background:#"+listE[7]+";color:#"+listE[8]+";}body{background:#"+listE[0]+";}.viewmenu{background:#"+listE[5]+";}.filemenu{color:#"+listE[6]+";}.viewmenu{color:#"+listE[6]+";}";
+			
+		}
+		document.getElementById("fm").addEventListener("click",function(){
+			isMenuActive = !isMenuActive;
+			if(isMenuActive)
+				document.getElementById("filemenu").style.display = "inline";
+			else
+				document.getElementById("filemenu").style.display = "none";
+		});
+		document.getElementById("cover").addEventListener("click",function(){
+			isMenuActive = false;
+			document.getElementById("filemenu").style.display = "none";
+			document.getElementById("viewmenu").style.display = "none";
+			document.getElementById("pane").focus();
+		});
+		document.getElementById("pane").addEventListener("click",function(){
+			isMenuActive = false;
+			document.getElementById("filemenu").style.display = "none";
+			document.getElementById("viewmenu").style.display = "none";
+		});
+		document.getElementById("f").addEventListener("change",function(){
+			var f = new FileReader();
+			f.readAsDataURL( document.getElementById("f").files[0] );
+			f.onload = function(e){
+				var b64 = e.target.result;
+				var decoded = atob(b64.substring(b64.lastIndexOf(",")+1));
+				document.getElementById("pane").value = decoded;
+			}
+		});
+		document.getElementById("open").addEventListener("click",function(){
+			isMenuActive = false;
+			document.getElementById("filemenu").style.display = "none";
+			document.getElementById("viewmenu").style.display = "none";
+			document.getElementById("f").click();
+			
+		});
+		document.getElementById("scripts").addEventListener("click",function(){
+			isMenuActive = false;
+			document.getElementById("filemenu").style.display = "none";
+			document.getElementById("viewmenu").style.display = "none";
+			
+			
+			document.getElementById("bg").style.display = "inline";
+			document.getElementById("scriptspopup").style.display = "inline";
+			if(localStorage.getItem("BluEditScripts")){
+				document.getElementById("scpteditor").value = atob(localStorage.getItem("BluEditScripts"));
+			}
+		});
+		document.getElementById("save").addEventListener("click",function(){
+			isMenuActive = false;
+			document.getElementById("filemenu").style.display = "none";
+			document.getElementById("viewmenu").style.display = "none";
+			var fname = prompt("Filename: ",fname_);
+			fname_ = fname;
+			document.getElementById("dwnld").download = fname;
+			document.getElementById("dwnld").href = "data:text/plain;charset=utf-8,"+document.getElementById("pane").value;
+			document.getElementById("dwnld").click();
+		});
+		document.getElementById("new").addEventListener("click",function(){
+			isMenuActive = false;
+			document.getElementById("filemenu").style.display = "none";
+			document.getElementById("viewmenu").style.display = "none";
+			document.getElementById("pane").value = "";
+		});
+		document.getElementById("scriptsclosebutton").addEventListener("click",function(){
+			isMenuActive = false;
+			document.getElementById("filemenu").style.display = "none";
+			document.getElementById("viewmenu").style.display = "none";
+			document.getElementById("bg").style.display = "none";
+			document.getElementById("scriptspopup").style.display = "none";
+			document.getElementById("pane").focus();
+		});
+		window.addEventListener("keyup",function(e){
+			e.preventDefault();
+			var key = e.keyCode||e.which;
+			if(key==17)ctrl = false;
+			//if(key==83)s = false;
+			//if(key==79)o = false;
+			if(e.ctrlKey&&key==83&&e.altKey){
+				document.getElementById("filemenu").style.display = "none";
+				var fname = prompt("Filename: ","Untitled.txt");
+				document.getElementById("dwnld").download = fname;
+				document.getElementById("dwnld").href = "data:text/plain;charset=utf-8,"+document.getElementById("pane").value;
+				document.getElementById("dwnld").click();
+			}
+			if(e.ctrlKey&&key==80&&e.altKey){
+				document.getElementById("filemenu").style.display = "none";
+				document.getElementById("f").click();
+			}
+			if(e.ctrlKey&&key==78&&e.altKey){
+				document.getElementById("filemenu").style.display = "none";
+				document.getElementById("pane").value = "";
+			}
+			if(e.ctrlKey&&key==82&&e.altKey){
+				localStorage.setItem("BluEditThemeCode","MDAwMDAwMDAwMDAwRkZGRkZGMzAzMDMwRkZGRkZGMDAwMDAwRkZGRkZGMzAzMDMwRkZGRkZGMDAwMDAwRkZGRkZG");
+			}
+		});//v1.1
+		
+		document.getElementById("vm").addEventListener("click",function(){
+			isMenuActive = !isMenuActive;
+			if(isMenuActive)
+				document.getElementById("viewmenu").style.display = "inline";
+			else
+				document.getElementById("viewmenu").style.display = "none";
+		});
+		document.getElementById("vm").addEventListener("mouseover",function(){
+			if(isMenuActive){
+				document.getElementById("viewmenu").style.display = "inline";
+				document.getElementById("filemenu").style.display = "none";
+			}
+		});
+		document.getElementById("fm").addEventListener("mouseover",function(){
+			if(isMenuActive){
+				document.getElementById("viewmenu").style.display = "none";
+				document.getElementById("filemenu").style.display = "inline";
+			}
+		});
+		
+		document.getElementById("theme").addEventListener("click",function(){
+			var code = atob(prompt("Enter code:",""));
+			if(code&&code.length>10){
+				var list = code.splitEvery(6);
+				//document.getElementById("menubar").style.background = "#"+list[0];
+				document.getElementsByTagName("style")[0].innerHTML = ".menubar{background-color:#"+list[0]+";}.menu:hover{background-color:#"+list[3]+";}.pane{color:#"+list[10]+";background:#"+list[9]+";}.filemenu{background:#"+list[5]+";}.menuitem:hover{background:#"+list[7]+";color:#"+list[8]+";}body{background:#"+list[0]+";}.viewmenu{background:#"+list[5]+";}.filemenu{color:#"+list[6]+";}.viewmenu{color:#"+list[6]+";}";
+				localStorage.setItem("BluEditThemeCode",btoa(code));
+			}
+			isMenuActive = false;
+			document.getElementById("viewmenu").style.display = "none";
+			document.getElementById("filemenu").style.display = "none";
+		});
+		document.getElementById("fontsize").addEventListener("click",function(){	
+			var size = prompt("Enter a font size:","");
+			document.getElementById("pane").style.fontSize = size+"px";
+			isMenuActive = false;
+			document.getElementById("viewmenu").style.display = "none";
+			document.getElementById("filemenu").style.display = "inline";
+		});
+		document.getElementById("savescpt").addEventListener("click",function(){
+			var code = document.getElementById("scpteditor").value;
+			localStorage.setItem("BluEditScripts",btoa(code));
+		});
+		if(localStorage.getItem("BluEditScripts")){
+			runScript();
+			function runScript(){
+				var menus = {
+					fileMenu:{
+						show:function(){
+							document.getElementById("filemenu").style.display = "inline";
+							isMenuActive = true;
+						},
+						addItem:function(text,code){
+							var newMenuItem = document.createElement("td");
+							var wrapper = document.createElement("tr");
+							newMenuItem.innerHTML = text;newMenuItem.className = "menuitem";
+							wrapper.appendChild(newMenuItem);
+							document.getElementById("filemenu").appendChild(wrapper);
+							newMenuItem.addEventListener("click",function(){eval(code);
+							document.getElementById("filemenu").style.display = "none";
+							isMenuActive = false;});
+						}
+					},
+					viewMenu:{
+						show:function(){
+							document.getElementById("viewmenu").style.display = "inline";
+							isMenuActive = true;
+						},
+						addItem:function(text,code){
+							var newMenuItem = document.createElement("td");
+							var wrapper = document.createElement("tr");
+							newMenuItem.innerHTML = text;
+							newMenuItem.className = "menuitem";
+							wrapper.appendChild(newMenuItem);
+							document.getElementById("viewmenu").appendChild(wrapper);
+							newMenuItem.addEventListener("click",function(){eval(code);
+							document.getElementById("viewmenu").style.display = "none";
+							isMenuActive = false;});
+						}
+					}
+				};
+				var fileControl = {
+					setFileName:function(filename){
+						fname_ = filename;
+					},
+					download:function(){
+						document.getElementById("dwnld").click();
+					},
+					open:function(){
+						document.getElementById("f").click();
+					},
+					new:function(){
+						document.getElementById("new").click();
+					}
+				};
+				var textPane = {
+					setText:function(v){
+						document.getElementById("pane").value = v;
+					},
+					getText: function(){
+						return document.getElementById("pane").value;
+					}
+				};
+				eval(atob(localStorage.getItem("BluEditScripts")).replaceAll("document","").replaceAll("window",""));
+			}
+		}
+	}
+	</script>
+  </head>
+  <body>
+    <div class="menubar" id="menubar">
+	  <span class="menu" id="fm">File</span>
+	  <span class="menu" id="vm">View</span>
+	</div>
+	<div class="document">
+	   <textarea class="pane" id="pane" spellcheck="false"></textarea>
+	</div>
+	<table class="filemenu" id="filemenu">
+	  <tbody>
+	    <tr>
+		  <td class="menuitem" id="open">Open</td>
+		</tr>
+		<tr>
+		  <td class="menuitem" id="save">Save as...</td>
+		</tr>
+		<tr>
+		  <td class="menuitem" id="new">New</td>
+		</tr>
+		<tr>
+		  <td class="menuitem" id="scripts">Scripts</td>
+		</tr>
+	  </tbody>
+	</table>
+	<table class="viewmenu" id="viewmenu">
+	  <tbody>
+	    <tr>
+		  <td class="menuitem" id="theme">Set theme</td>
+		</tr>
+		<tr>
+		  <td class="menuitem" id="fontsize">Change font size</td>
+		</tr>
+	  </tbody>
+	</table>
+	<div class="hidden">
+	  <input type="file" id="f"/>
+	  <a href="data:" download="untitled.txt" id="dwnld">_</a> 
+	</div>
+	<div class="hidden" id="cover"></div>
+	
+	<div class="bg" id="bg" style="display: none;"></div>
+	
+	<div class="popup" id="scriptspopup">
+	  <div align="right" id="scriptsclosebutton">
+	    <span class="closebutton">x</span>
+	  </div>
+	  <h1 class="popuptext">Edit script</h1>
+	  <textarea class="editscpt" id="scpteditor"></textarea>
+	  <input type="button" value="Save" id="savescpt"/>
+	</div>
+	
+  </body>
+</html>
